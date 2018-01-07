@@ -1,0 +1,16 @@
+{
+  "name": "licode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "command-line-args": "^4.0.7",
+    "jimp": "^0.2.28",
+    "relative-luminance": "0.0.2"
+  }
+}
