@@ -22,11 +22,13 @@ function writeLine(file, line) {
 }
 
 jimp.read(process.argv[2], (error, image) => {
-  image.scaleToFit(
-    options['x-mm'] / options.resolution, 
-    options['y-mm'] / options.resolution,
-    jimp.RESIZE_BICUBIC
-  )
+  if (options['x-mm'] || options['y-mm']) {
+    image.scaleToFit(
+      options['x-mm'] ? options['x-mm'] / options.resolution : jimp.AUTO, 
+      options['y-mm'] ? options['y-mm'] / options.resolution : jimp.AUTO,
+      jimp.RESIZE_BICUBIC
+    )
+  }
 
   image.greyscale()
 
@@ -34,10 +36,16 @@ jimp.read(process.argv[2], (error, image) => {
   writeLine(gcode, 'G0 Z1.0 F500')
   writeLine(gcode, 'G90')
   writeLine(gcode, 'G28')
-  writeLine(gcode, 'G92 X-31.4 Y-52.5')
+  // writeLine(gcode, 'G92 X-31.75 Y-52.25')
+  //writeLine(gcode, 'G92 X-32.1 Y-51.6')
+  
+  //G92 X-40 Y-60 Z0
+  writeLine(gcode, 'G92 X-31 Y-51')
+  
   writeLine(gcode, 'G0 X0 Y0 Z0 F3000')
-  writeLine(gcode, 'M201 X3000 Y3000')
-  writeLine(gcode, 'M205 X15 Y15')
+  // writeLine(gcode, 'M201 X1500 Y1500')
+  writeLine(gcode, 'M204 T500')
+  // writeLine(gcode, 'M205 X15 Y15')
 
   writeLine(gcode, '')
 
@@ -54,7 +62,7 @@ jimp.read(process.argv[2], (error, image) => {
     writeLine(gcode, 'G0 Y' + ((image.bitmap.height - y) * options.resolution).toFixed(3))
 
     for (var x0 = 0; x0 < image.bitmap.width; x0++) {
-      var x = y % 2 ? image.bitmap.width - x0 - 1 : x0
+      var x = y % 2 ? x0 : image.bitmap.width - x0 - 1
 
       var idx = image.getPixelIndex(x, y)
 
@@ -62,8 +70,6 @@ jimp.read(process.argv[2], (error, image) => {
       var g = image.bitmap.data[idx + 1]
       var b = image.bitmap.data[idx + 2]
 
-
-      //process.exit()
       //var luminesce = (1 - lum([r, g, b])) * (image.bitmap.data[idx + 3] / 255)
       var luminesce = (1 - r / 255) * (image.bitmap.data[idx + 3] / 255)
       var linger = Math.round(luminesce * deltaLinger)
@@ -89,8 +95,10 @@ jimp.read(process.argv[2], (error, image) => {
     }
   }
 
+  writeLine(gcode, '')
   writeLine(gcode, 'G0 X0 Y0')
   writeLine(gcode, 'M18')
+  writeLine(gcode, 'M501')
 
   image.greyscale()
   image.write('test-output.png')
